@@ -4,8 +4,16 @@
 #include <iostream>
 #include <typeinfo>
 
-//template <typename Base, typename Derived>
-//class Ptr;
+template <typename T>
+struct Deleter
+{
+	T *d_ptr;
+	
+	Deleter(T *ptr)
+	:
+	d_ptr(ptr)
+	{}
+};
 
 template <typename Base>
 class Ptr
@@ -13,25 +21,22 @@ class Ptr
 	Base *d_ptr;
 	
 	public:
-		Ptr(auto *basePtr)
+		template <typename Derived>
+		Ptr(Derived *ptr)
 		:
-			d_ptr(basePtr)
+			d_ptr(ptr)
 		{
-			if (typeid(*basePtr) != typeid(Base))
-			{
-				
-				std::cerr << "We got a derived case!\n";
-			}
+			Deleter<Derived> del(ptr);
 		}
 		~Ptr()
 		{
-			//delete static_cast<Base *>(d_ptr);
 			delete d_ptr;
 		}
 		
-		void reset(auto *basePtr)
+		void reset(Base *basePtr)
 		{
 			//delete static_cast<Base *>(d_ptr);
+			delete d_ptr;
 			d_ptr = basePtr;
 		}
 };
