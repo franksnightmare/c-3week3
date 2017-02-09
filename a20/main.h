@@ -2,7 +2,7 @@
 #define MAIN_H
 
 #include <iostream>
-//#include <algorithm> 
+//#include <utility> 
 //#include <typeinfo>
 
 enum Operators
@@ -16,11 +16,10 @@ struct Shl
     Derived &operator<<=(Derived const &rhs)
     {
 	static_cast<Derived &>(*this).shlWrap(rhs);
-	return std::move(static_cast<Derived &>(*this));
+
+	return static_cast<Derived &>(*this);
     }
 };
-
-//specialization
 
 template <class Derived, Operators ...ops>
     class SBhandler
@@ -28,7 +27,7 @@ template <class Derived, Operators ...ops>
 };
 
 template <class Derived, Operators ...ops>
-    class SBhandler<Derived, LSH, ops...>: public Shl<Derived>,SBhandler<Derived, ops...>
+    class SBhandler<Derived, LSH, ops...>: public Shl<Derived>, SBhandler<Derived, ops...>
 {
 };
 
@@ -45,7 +44,7 @@ template <class Derived, Operators ...ops>
 
     //friend Derived operator<<Derived>(Derived &&lhs, Derived const &rhs);
 
-    void shlWrap(Derived const &rhs);//TODO
+    void shlWrap(Derived const &rhs);
     std::ostream &insertWrap(std::ostream &out) const;//TODO
       
 };
@@ -53,7 +52,8 @@ template <class Derived, Operators ...ops>
 template <class Derived, Operators ...ops>
     void ShiftBase<Derived, ops...>::shlWrap(Derived const &rhs)
 {
-    static_cast<Derived &>(*this).lshift(rhs);
+    //static_cast<Derived &>(*this).lshift(rhs);
+    static_cast<Derived &>(static_cast<Shl<Derived> &>(*this)).lshift(rhs);
 }
 
 class ShlInserter: public ShiftBase<ShlInserter, LSH>
@@ -63,6 +63,7 @@ class ShlInserter: public ShiftBase<ShlInserter, LSH>
 
  public:
     ShlInserter(int data);
+    ShlInserter(ShlInserter &lhs);
     void swap(ShlInserter &other);//TODO
     int Data();
     
