@@ -1,0 +1,89 @@
+\documentclass[11pt]{article}
+
+\usepackage{times}
+\usepackage[english]{babel}
+
+% -----------------------------------------------
+% especially use this for you code
+% -----------------------------------------------
+
+\usepackage{courier}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{tabularx}
+\usepackage{graphicx}
+
+\definecolor{Gray}{gray}{0.95}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{language=C++,
+	basicstyle = \normalsize\ttfamily,   % the size and fonts that are used
+	tabsize = 2,                    % sets default tabsize
+	breaklines = true,              % sets automatic line breaking
+	keywordstyle=\color{blue}\ttfamily,
+	stringstyle=\color{red}\ttfamily,
+	commentstyle=\color{mygreen}\ttfamily,
+	numbers=left,
+	keepspaces=true,
+	showspaces=false,
+	showstringspaces=false,
+}
+
+\begin{document}
+
+\title{Programming in C/C++ \\
+       Exercises set three: advanced advanced class templates
+}
+\date{\today}
+\author{Christiaan Steenkist \\
+Jaime Betancor Valado \\
+Remco Bos \\
+}
+
+\maketitle
+\section*{Exercise 17, Insertable policies}
+We made a struct that can technically be any container.
+Here we the define the functions empty to ensure compilation.
+
+\subsection*{Code listings}
+\lstinputlisting[caption = insertable.h]{src/a17/insertable.h}
+\lstinputlisting[caption = main.ih]{src/a17/main.ih}
+\lstinputlisting[caption = main.cc]{src/a17/main.cc}
+
+\section*{Exercise 21, \texttt{Ptr}, the journey}
+It is pretty hard to make a pointer that is made for a base class but still appropriately frees a derived class, especially if you don't know what you're doing. Fortunately it worked out and we are hopefully a little wiser because of it.
+
+\subsection*{Design}
+There were two mountains to overcome while designing this class.
+The first problem was that the derived type would disappear when it is casted to a base pointer in the constructor.
+When you no longer know the derived type you can't go back (we tried a lot of things) and so the class could do nothing but call the base destructor.
+The solution to this was to make the constructor a templated function which apparently is a thing that can be done and so pointers of any type (that can be converted to a base pointer) could be supplied and we could know their type (sucess!).
+
+Now that the derived class was gotten in the constructor we needed to secure it somewhere lest it slip away and disappear at the end of construction.
+Unsurprisingly sticking it as a data member in the main class doesn't work since you need to know what it is going to be beforehand.
+We settled on storing the derived pointer in a deleter object (using an empty base class and a templated derived class) but it seems that virtual functions don't really want to work with template classes so it wouldn't call our derived destructor.
+After learning of type erasure we managed to work something out by changing the deleter to a \texttt{std::function} and then pass the derived class information in a lambda function that was made in the constructor.
+
+The final small problem was the fact that this lambda function could not take derived pointers as parameters when we designed the \texttt{std::function} as taking a base pointer.
+To solve this we stuck with the base pointer and used a static cast instead and apparently that works.
+What is more the derived constructor automatically calls the base constructor so the \texttt{Ptr} class does not have to do anything else.
+Everything went better than expected after 8 hours of mucking about.
+
+\subsection*{Output}
+\begin{lstlisting}
+Derived's destructor
+Base destr.
+Derived2's destructor
+Base destr.
+Derived's destructor
+Base destr.
+\end{lstlisting}
+
+\subsection*{Code listings}
+\lstinputlisting[caption = ptr.h]{src/a21/ptr.h}
+\lstinputlisting[caption = main.cc]{src/a21/main.cc}
+
+\end{document}
