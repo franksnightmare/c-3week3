@@ -24,7 +24,9 @@ template <class Derived, Operators ...ops>
 };
 
 template <class Derived, Operators ...ops>
-    class SBhandler<Derived, LSH, ops...>: public Shl<Derived>, SBhandler<Derived, ops...>
+    class SBhandler<Derived, LSH, ops...>:
+        public Shl<Derived>,
+        SBhandler<Derived, ops...>
 {
 };
 
@@ -35,19 +37,22 @@ template <class Derived>
 
 
 template <class Derived, Operators ...ops>
-    class ShiftBase: public SBhandler<Derived, ops...>
+    class ShiftBase:
+        public SBhandler<Derived, ops...>
 {
     friend Shl<Derived>;
 
     void shlWrap(Derived const &rhs);
     std::ostream &insertWrap(std::ostream &out) const;
-      
+
 };
 
 template <class Derived, Operators ...ops>
-    void ShiftBase<Derived, ops...>::shlWrap(Derived const &rhs)
+    void ShiftBase<Derived, ops...>::shlWrap(
+        Derived const &rhs)
 {
-    static_cast<Derived &>(static_cast<Shl<Derived> &>(*this)).lshift(rhs);
+    static_cast<Derived &>(static_cast<Shl<Derived>
+        &>(*this)).lshift(rhs);
 }
 
 class ShlInserter: public ShiftBase<ShlInserter, LSH>
@@ -60,7 +65,7 @@ class ShlInserter: public ShiftBase<ShlInserter, LSH>
     ShlInserter(ShlInserter &lhs);
     void swap(ShlInserter &other);
     int Data();
-    
+
  private:
     void lshift(ShlInserter const &lhs);
 };
