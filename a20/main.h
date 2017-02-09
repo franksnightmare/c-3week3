@@ -53,7 +53,7 @@ template <class Derived, Operators ...ops>
 template <class Derived, Operators ...ops>
     void ShiftBase<Derived, ops...>::shlWrap(Derived const &rhs)
 {
-    lshift(rhs);
+    static_cast<Derived &>(*this).lshift(rhs);
 }
 
 class ShlInserter: public ShiftBase<ShlInserter, LSH>
@@ -86,12 +86,3 @@ void ShlInserter::lshift(ShlInserter const &lhs)
 }
 
 #endif
-
-int main()
-{
-    ShlInserter obj1 = 2;
-    ShlInserter	obj2 = 1;
-    obj1 <<= obj2;
-    std::cout << obj1.Data() << "\n";
-    
-}
